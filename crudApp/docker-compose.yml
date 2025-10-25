@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  task-movil-app:
+    build: .
+    container_name: task_movil_app
+    ports:
+      - "8100:9000"
+    restart: always
