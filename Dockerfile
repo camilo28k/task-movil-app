@@ -1,21 +1,24 @@
-# Etapa 1: Construcción del frontend
+# Etapa 1: Build del proyecto
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+
+
+COPY crudApp/package*.json ./
+WORKDIR /app/crudApp
 RUN npm install
-COPY . .
+
+# Copiar todo el código fuente
+COPY crudApp/ ./
+
+# Construir la app
 RUN npm run build
 
-# Etapa 2: Servidor NGINX
+# Etapa 2: Servir con NGINX
 FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/crudApp/dist /usr/share/nginx/html
 
-# Exponemos el puerto 8001 (donde servirá la app)
 EXPOSE 8001
-
-
-RUN sed -i 's/80/8001/g' /etc/nginx/conf.d/default.conf
-
 CMD ["nginx", "-g", "daemon off;"]
+
 
 
