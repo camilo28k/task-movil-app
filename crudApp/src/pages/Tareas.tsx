@@ -13,19 +13,34 @@ import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import TareaForm from "../components/TareaForm";
 
+// 👇 Definimos la interfaz Tarea
+interface Tarea {
+  id: number;
+  titulo: string;
+  descripcion: string;
+}
+
 const Tareas: React.FC = () => {
-  const [tareas, setTareas] = useState<any[]>([]);
+  const [tareas, setTareas] = useState<Tarea[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tareaEdit, setTareaEdit] = useState<any | null>(null);
+  const [tareaEdit, setTareaEdit] = useState<Tarea | null>(null);
 
   const obtenerTareas = async () => {
-    const res = await api.get("/tareas");
-    setTareas(res.data);
+    try {
+      const res = await api.get<Tarea[]>("/tareas");
+      setTareas(res.data);
+    } catch (error) {
+      console.error("Error al obtener tareas:", error);
+    }
   };
 
   const eliminarTarea = async (id: number) => {
-    await api.delete(`/tareas/${id}`);
-    obtenerTareas();
+    try {
+      await api.delete(`/tareas/${id}`);
+      obtenerTareas();
+    } catch (error) {
+      console.error("Error al eliminar tarea:", error);
+    }
   };
 
   useEffect(() => {
@@ -85,3 +100,4 @@ const Tareas: React.FC = () => {
 };
 
 export default Tareas;
+ 

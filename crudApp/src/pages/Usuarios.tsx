@@ -13,19 +13,34 @@ import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import UsuarioForm from "../components/UsuarioForm";
 
+// 👇 Definimos la interfaz Usuario
+interface Usuario {
+  id: number;
+  nombre: string;
+  correo: string;
+}
+
 const Usuarios: React.FC = () => {
-  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [usuarioEdit, setUsuarioEdit] = useState<any | null>(null);
+  const [usuarioEdit, setUsuarioEdit] = useState<Usuario | null>(null);
 
   const obtenerUsuarios = async () => {
-    const res = await api.get("/usuarios");
-    setUsuarios(res.data);
+    try {
+      const res = await api.get<Usuario[]>("/usuarios"); 
+      setUsuarios(res.data);
+    } catch (error) {
+      console.error("Error al obtener usuarios:", error);
+    }
   };
 
   const eliminarUsuario = async (id: number) => {
-    await api.delete(`/usuarios/${id}`);
-    obtenerUsuarios();
+    try {
+      await api.delete(`/usuarios/${id}`);
+      obtenerUsuarios();
+    } catch (error) {
+      console.error("Error al eliminar usuario:", error);
+    }
   };
 
   useEffect(() => {
