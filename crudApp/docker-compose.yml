@@ -1,9 +1,13 @@
-version: '3.8'
-
 services:
-  task-movil-app:
+  frontend:
     build: .
-    container_name: task_movil_app
+    container_name: task-movil-app
     ports:
-      - "8100:9000"
+      - "8001:8001"
     restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

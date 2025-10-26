@@ -1,45 +1,52 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_USER = 'haroldbg'
+        DOCKERHUB_CREDENTIALS = 'dockerhub-token'
+        IMAGE_FRONTEND = 'task-movil-app'
+    }
+
     stages {
-        stage('Clonar código') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/camilo28k/task-movil-app.git'
+                echo '📦 Clonando código fuente del frontend...'
+                checkout scm
             }
         }
 
-        stage('Instalar dependencias') {
+        stage('Build Frontend') {
             steps {
-                sh 'npm install'
+                echo '⚙️ Construyendo imagen Docker del frontend...'
+                sh 'docker build -t $DOCKERHUB_USER/$IMAGE_FRONTEND:latest .'
             }
         }
 
-        stage('Construir aplicación') {
+        stage('Push to DockerHub') {
             steps {
-                sh 'npm run build'
+                echo '⬆️ Subiendo imagen del frontend a Docker Hub...'
+                withCredentials([string(credentialsId: "$DOCKERHUB_CREDENTIALS", variable: 'DOCKERHUB_PASS')]) {
+                    sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+                    sh 'docker push $DOCKERHUB_USER/$IMAGE_FRONTEND:latest'
+                }
             }
         }
 
-        stage('Construir imagen Docker') {
+        stage('Deploy Frontend') {
             steps {
-                sh 'docker build -t task-movil-app .'
-            }
-        }
-
-        stage('Desplegar contenedor') {
-            steps {
+                echo '🚀 Desplegando frontend con Docker Compose...'
                 sh 'docker compose down || true'
-                sh 'docker compose up -d'
+                sh 'docker compose up -d --build'
             }
         }
     }
 
     post {
         success {
-            echo '✅ Despliegue exitoso de task-movil-app en Docker (Puerto 8080:9000).'
+            echo '✅ Pipeline completado exitosamente.'
         }
         failure {
-            echo '⚠️ Error en el pipeline del frontend. Revisa logs en Jenkins.'
+            echo '❌ Error en el pipeline. Revisa los logs.'
         }
     }
 }
